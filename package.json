@@ -100,6 +100,10 @@
     "typechain": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat typechain",
     "start": "npx hardhat node --show-stack-traces",
     "deploy:v1:local": "npx hardhat deploy:v1 --network localhost",
-    "deploy:v2:local": "npx hardhat deploy:v2 --network localhost"
+    "deploy:v2:local": "npx hardhat deploy:v2 --network localhost",
+    "export": "npx hardhat export"
+  },
+  "dependencies": {
+    "json-stable-stringify": "^1.0.1"
   }
 }
