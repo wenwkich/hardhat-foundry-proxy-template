@@ -95,7 +95,7 @@
     "prettier": "prettier --config ./.prettierrc.yml --write \"**/*.{js,json,md,sol,ts,yml}\"",
     "prettier:check": "prettier --check --config ./.prettierrc.yml \"**/*.{js,json,md,sol,ts,yml}\"",
     "deploy:localtest": "hardhat test --network localhost",
-    "test": "MAINNET_RPC_URL=$(grep '^MAINNET_RPC_URL' .env) && forge test --fork-url $MAINNET_RPC_URL",
+    "test": "forge test --fork-url $(grep '^MAINNET_RPC_URL' .env | sed -e 's/^MAINNET_RPC_URL=\"//' -e 's/\"$//')",
     "foundry:remappings": "forge remappings > remappings.txt",
     "typechain": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat typechain",
     "start": "npx hardhat node --show-stack-traces",
