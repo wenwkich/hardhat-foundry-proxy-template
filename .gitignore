@@ -6,6 +6,7 @@
 !.yarn/sdks
 !.yarn/versions
 **/artifacts
+**/out
 **/build
 **/cache
 **/coverage
@@ -15,6 +16,7 @@
 **/dist
 **/node_modules
 **/types
+**/deployments
 
 # files
 *.env

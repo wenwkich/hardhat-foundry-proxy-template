@@ -9,7 +9,44 @@
 [license]: https://opensource.org/licenses/MIT
 [license-badge]: https://img.shields.io/badge/License-MIT-blue.svg
 
-A Hardhat-based template for developing Solidity smart contracts, with sensible defaults.
+A Hardhat-based & Foundry-based template for developing upgradeable Solidity smart contracts and etc, with sensible
+defaults.
+
+This is also my personal opinionated solution on the following tricky problems:
+
+- foundry integrated with hardhat without manually copying solidity lib from source (but with npm)
+  - overall, foundry is much faster than hardhat test & allowed me to write cleaner tests
+  - but it's trivial process to integrate the foundry contracts
+    - this extended template will do the remapping, which will allow hardhat to resolve files by foundry and also allow
+      foundry to resolve files downloaded by npm
+- testing with soldity using foundry
+  - it covers the following features with foundry:
+    - fixure
+    - storage manipulation (used to minting unlimited erc20 token)
+    - EOA impersonation
+    - time-based testing (commented somewhere)
+    - assertion
+    - expect on revert
+    - fuzz input (property test)
+- reproducable deployment for frontend using hardhat-deploy
+  - generate a file that maps network name & address which frontend could be used
+- upgradeable contracts using proxy
+  - using `@openzeppeplin/contract-upgradable`
+  - use `initialize()` to bootstrap arguments instead of constructor
+    - security reason why we should use the library instead of writing our own:
+      - library provides `initialize` modifier that ensure us to initialize after deployment
+      - it can make sure `initialize` wouldn't be called again
+- scripts to upgrade the contract using hardhat-deploy
+- solve circular package problem of typechain gen and tasks file
+  - by moving away `tasks` folder away before the `clean` and move it back after the clean
+  - this seems to be the only way to bypass ci/cd
+
+This is a template WIP, here are some of my to-dos:
+
+- Github Action with Foundry
+- Using external artifacts that already exists but not in npm registry
+
+## Libray used
 
 - [Hardhat](https://github.com/nomiclabs/hardhat): compile, run and test smart contracts
 - [TypeChain](https://github.com/ethereum-ts/TypeChain): generate TypeScript bindings for smart contracts
@@ -17,6 +54,15 @@ A Hardhat-based template for developing Solidity smart contracts, with sensible 
 - [Solhint](https://github.com/protofire/solhint): code linter
 - [Solcover](https://github.com/sc-forks/solidity-coverage): code coverage
 - [Prettier Plugin Solidity](https://github.com/prettier-solidity/prettier-plugin-solidity): code formatter
+- [Foundry](https://github.com/foundry-rs/foundry): a framework that allows testing in Solidity
+- [hardhat-deploy](https://github.com/wighawag/hardhat-deploy): for replicable deployment, associate name to address
+
+## Feature introduction
+
+This repo include two version of `Vault` which user could deposit ETH (which will be wrapped as WETH) or ERC20 Token:
+
+- first version only allow deposit
+- second version will also allow withdraw
 
 ## Getting Started
 
@@ -48,6 +94,7 @@ This template comes with sensible default configurations in the following files:
 ├── .solhintignore
 ├── .solhint.json
 ├── .yarnrc.yml
+├── foundry.toml
 └── hardhat.config.ts
 ```
 
@@ -86,6 +133,9 @@ Then, proceed with installing dependencies:
 $ yarn install
 ```
 
+Make sure you have `forge` installed as well, which is very easy:
+[website](https://book.getfoundry.sh/getting-started/installation)
+
 ### Compile
 
 Compile the smart contracts with Hardhat:
@@ -104,10 +154,37 @@ $ yarn typechain
 
 ### Test
 
-Run the tests with Hardhat:
+Run the tests with Forge of contract logic:
+
+(If this doesn't work, make sure you called `yarn clean` to do the remapping of foundry and hardhat first)
+
+```sh
+$ forge test --fork-url <MAINNET_RPC_URL>
+```
+
+or (make sure you set `MAINNET_RPC_URL` in `.env`)
 
 ```sh
 $ yarn test
+```
+
+If want to run the upgrade logic, firstly run a node
+
+```sh
+$ yarn start
+```
+
+Run the following task to deploy
+
+```sh
+$ yarn deploy:v1:local
+$ yarn deploy:v2:local
+```
+
+In the seperate tab, run the tests with proxy upgrade logic:
+
+```sh
+$ yarn deploy:localtest
 ```
 
 ### Lint Solidity
@@ -139,12 +216,14 @@ $ yarn coverage
 See the gas usage per unit test and average gas per method call:
 
 ```sh
-$ REPORT_GAS=true yarn test
+$ forge test --fork-url <MAINNET_URL> --report-gas
 ```
 
 ### Clean
 
 Delete the smart contract artifacts, the coverage reports and the Hardhat cache:
+
+**Make sure to call this if there is any library & dependency change**
 
 ```sh
 $ yarn clean

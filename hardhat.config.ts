@@ -1,11 +1,14 @@
 import "@nomicfoundation/hardhat-toolbox";
+import "@nomiclabs/hardhat-ethers";
 import { config as dotenvConfig } from "dotenv";
+import fs from "fs";
+import "hardhat-deploy";
+import "hardhat-preprocessor";
 import type { HardhatUserConfig } from "hardhat/config";
 import type { NetworkUserConfig } from "hardhat/types";
 import { resolve } from "path";
 
-import "./tasks/accounts";
-import "./tasks/deploy";
+import "./tasks";
 
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
 dotenvConfig({ path: resolve(__dirname, dotenvConfigPath) });
@@ -74,7 +77,12 @@ const config: HardhatUserConfig = {
     currency: "USD",
     enabled: process.env.REPORT_GAS ? true : false,
     excludeContracts: [],
-    src: "./contracts",
+    src: "./src",
+  },
+  namedAccounts: {
+    deployer: {
+      default: 0, // here this will by default take the first account as deployer
+    },
   },
   networks: {
     hardhat: {
@@ -95,7 +103,7 @@ const config: HardhatUserConfig = {
   paths: {
     artifacts: "./artifacts",
     cache: "./cache",
-    sources: "./contracts",
+    sources: "./src",
     tests: "./test",
   },
   solidity: {
@@ -118,6 +126,30 @@ const config: HardhatUserConfig = {
     outDir: "types",
     target: "ethers-v5",
   },
+  preprocess: {
+    eachLine: (hre) => ({
+      transform: (line: string) => {
+        if (line.match(/^\s*import /i)) {
+          for (const [from, to] of getRemappings()) {
+            if (line.includes(from)) {
+              line = line.replace(from, to);
+              break;
+            }
+          }
+        }
+        return line;
+      },
+    }),
+  },
 };
+
+function getRemappings() {
+  return fs
+    .readFileSync("remappings.txt", "utf8")
+    .split("\n")
+    .filter((line) => !!line) // remove empty lines
+    .filter((line) => !line.trim().split("=")[1].startsWith("node_modules")) // skip node_modules
+    .map((line) => line.trim().split("="));
+}
 
 export default config;
