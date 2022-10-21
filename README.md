@@ -44,7 +44,6 @@ This is also my personal opinionated solution on the following tricky problems:
 This is a template WIP, here are some of my to-dos:
 
 - Github Action with Foundry
-- Using external artifacts that already exists but not in npm registry
 
 ## Libray used
 
@@ -189,6 +188,14 @@ In the seperate tab, run the tests with proxy upgrade logic:
 ```sh
 $ yarn deploy:localtest
 ```
+
+### Export Deployment
+
+```sh
+$ yarn export
+```
+
+This will export a deployment file with address in the format of constants/.placeholder
 
 ### Lint Solidity
 
