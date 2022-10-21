@@ -66,8 +66,11 @@ This repo include two version of `Vault` which user could deposit ETH (which wil
 
 ## Getting Started
 
-Click the [`Use this template`](https://github.com/paulrberg/hardhat-template/generate) button at the top of the page to
-create a new repository with this repo as the initial state.
+Clone this repo recursively:
+
+```sh
+$ git clone --recursive <git repo>
+```
 
 ## Features
 
